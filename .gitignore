@@ -49,3 +49,4 @@ next-env.d.ts
 service-account*.json
 credentials*.json
 google-credentials*.json
+*.docx
