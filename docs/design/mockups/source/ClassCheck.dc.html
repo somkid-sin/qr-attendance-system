@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>@media print{aside,header,.no-print{display:none !important}main{grid-column:1/-1 !important}}</style>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Sarabun',sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:oklch(0.85 0.06 255)}
+  select{font-family:'Sarabun',sans-serif}
+</style>
+</helmet>
+<div style="min-height:100vh;background:oklch(0.97 0.004 255);color:oklch(0.22 0.01 255);font-family:'Sarabun',sans-serif">
+
+<sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;min-height:100vh">
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:oklch(0.995 0.002 255);border-bottom:1px solid oklch(0.9 0.008 255);position:sticky;top:0;z-index:5">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;border-radius:8px;background:oklch(0.47 0.14 255);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px">C</div>
+      <span style="font-weight:700;font-size:19px;letter-spacing:-0.01em">ClassCheck</span>
+    </div>
+    <button style="padding:10px 22px;border-radius:8px;border:none;background:oklch(0.47 0.14 255);color:white;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.4 0.14 255)" onClick="{{ goLogin }}">เข้าสู่ระบบ</button>
+  </header>
+
+  <section style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:96px 24px 64px;gap:20px">
+    <div style="padding:6px 16px;border-radius:999px;background:oklch(0.95 0.02 255);color:oklch(0.4 0.14 255);font-size:13px;font-weight:600">ระบบเช็คชื่อเข้าชั้นเรียนด้วย QR Code</div>
+    <h1 style="font-size:52px;font-weight:700;line-height:1.15;margin:0;max-width:780px;letter-spacing:-0.02em">เช็คชื่อเข้าเรียนได้ในไม่กี่วินาที</h1>
+    <p style="font-size:19px;color:oklch(0.48 0.01 255);max-width:560px;margin:0;line-height:1.6">อาจารย์เปิดคลาสและแสดง QR Code หน้าห้อง นักศึกษาสแกนเพื่อเช็คอิน ระบบสรุปผลการเข้าเรียนให้อัตโนมัติแบบเรียลไทม์</p>
+    <div style="display:flex;gap:14px;margin-top:12px">
+      <button style="padding:14px 28px;border-radius:9px;border:none;background:oklch(0.47 0.14 255);color:white;font-weight:600;font-size:16px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.4 0.14 255)" onClick="{{ goLoginTeacher }}">เข้าสู่ระบบสำหรับอาจารย์</button>
+      <button style="padding:14px 28px;border-radius:9px;border:1.5px solid oklch(0.85 0.01 255);background:white;color:oklch(0.22 0.01 255);font-weight:600;font-size:16px;cursor:pointer;font-family:inherit" style-hover="border-color:oklch(0.47 0.14 255);color:oklch(0.47 0.14 255)" onClick="{{ goLoginStudent }}">เข้าสู่ระบบสำหรับนักศึกษา</button>
+    </div>
+  </section>
+
+  <section style="padding:0 48px 96px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1180px;margin:0 auto;width:100%">
+    <sc-for list="{{ features }}" as="f" hint-placeholder-count="3">
+      <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:12px">
+        <div style="width:44px;height:44px;border-radius:10px;background:{{ f.tint }}"></div>
+        <div style="font-weight:700;font-size:17px">{{ f.title }}</div>
+        <div style="color:oklch(0.48 0.01 255);font-size:14.5px;line-height:1.6">{{ f.desc }}</div>
+      </div>
+    </sc-for>
+  </section>
+
+  <footer style="padding:24px 48px;border-top:1px solid oklch(0.9 0.008 255);color:oklch(0.55 0.01 255);font-size:13px;text-align:center">© 2569 ClassCheck — ระบบเช็คชื่อเข้าชั้นเรียนด้วย QR Code</footer>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:400px;background:white;border:1px solid oklch(0.9 0.008 255);border-radius:16px;padding:36px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:center">
+      <div style="width:32px;height:32px;border-radius:8px;background:oklch(0.47 0.14 255);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px">C</div>
+      <span style="font-weight:700;font-size:18px">ClassCheck</span>
+    </div>
+    <div style="display:flex;background:oklch(0.95 0.004 255);border-radius:9px;padding:4px">
+      <button style="flex:1;padding:9px;border:none;border-radius:7px;font-weight:600;font-size:14.5px;cursor:pointer;font-family:inherit" style="{{ teacherTabStyle }}" onClick="{{ selectRoleTeacher }}">อาจารย์</button>
+      <button style="flex:1;padding:9px;border:none;border-radius:7px;font-weight:600;font-size:14.5px;cursor:pointer;font-family:inherit" style="{{ studentTabStyle }}" onClick="{{ selectRoleStudent }}">นักศึกษา</button>
+    </div>
+    <form onSubmit="{{ doLogin }}" style="display:flex;flex-direction:column;gap:14px">
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13.5px;font-weight:600;color:oklch(0.4 0.01 255)">{{ loginIdLabel }}
+        <input type="text" placeholder="{{ loginIdPlaceholder }}" style="padding:11px 13px;border-radius:8px;border:1px solid oklch(0.87 0.008 255);font-size:15px;font-family:inherit" required="{{ true }}"/>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13.5px;font-weight:600;color:oklch(0.4 0.01 255)">รหัสผ่าน
+        <input type="password" placeholder="••••••••" style="padding:11px 13px;border-radius:8px;border:1px solid oklch(0.87 0.008 255);font-size:15px;font-family:inherit" required="{{ true }}"/>
+      </label>
+      <button type="submit" style="margin-top:6px;padding:12px;border-radius:9px;border:none;background:oklch(0.47 0.14 255);color:white;font-weight:600;font-size:15.5px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.4 0.14 255)">เข้าสู่ระบบ</button>
+    </form>
+    <div style="display:flex;align-items:center;gap:10px;color:oklch(0.65 0.006 255);font-size:12.5px">
+      <div style="flex:1;height:1px;background:oklch(0.9 0.008 255)"></div>หรือ<div style="flex:1;height:1px;background:oklch(0.9 0.008 255)"></div>
+    </div>
+    <button type="button" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:11px;border-radius:9px;border:1px solid oklch(0.87 0.008 255);background:white;color:oklch(0.3 0.01 255);font-weight:600;font-size:14.5px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.97 0.004 255)" onClick="{{ doLogin }}">
+      <div style="width:18px;height:18px;border-radius:999px;background:conic-gradient(oklch(0.6 0.19 25) 0 25%,oklch(0.6 0.17 145) 25% 50%,oklch(0.65 0.17 95) 50% 75%,oklch(0.5 0.19 255) 75% 100%);flex-shrink:0"></div>
+      เข้าสู่ระบบด้วย Google
+    </button>
+    <a href="#" style="text-align:center;font-size:13.5px;color:oklch(0.48 0.01 255);text-decoration:none" style-hover="color:oklch(0.47 0.14 255)" onClick="{{ backHome }}">← กลับหน้าแรก</a>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isTeacher }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:230px 1fr;min-height:100vh">
+  <aside style="background:oklch(0.16 0.02 255);color:white;display:flex;flex-direction:column;padding:22px 16px">
+    <div style="display:flex;align-items:center;gap:9px;padding:0 8px 24px">
+      <div style="width:28px;height:28px;border-radius:7px;background:oklch(0.6 0.14 255);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">C</div>
+      <span style="font-weight:700;font-size:16px">ClassCheck</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:4px">
+      <button style="{{ navOpenStyle }}" onClick="{{ setTabOpen }}">เปิดคลาสเช็คอิน</button>
+      <button style="{{ navSummaryStyle }}" onClick="{{ setTabSummary }}">สรุปผลการเข้าเรียน</button>
+    </nav>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+      <div style="height:1px;background:oklch(0.32 0.02 255)"></div>
+      <button style="background:none;border:none;color:oklch(0.75 0.01 255);font-size:13.5px;text-align:left;padding:9px 12px;cursor:pointer;font-family:inherit;border-radius:7px" style-hover="background:oklch(0.24 0.02 255);color:white" onClick="{{ logout }}">ออกจากระบบ</button>
+    </div>
+  </aside>
+
+  <main style="display:flex;flex-direction:column;min-width:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:white;border-bottom:1px solid oklch(0.9 0.008 255)">
+      <select style="padding:9px 14px;border-radius:8px;border:1px solid oklch(0.87 0.008 255);font-size:14.5px;font-weight:600;color:oklch(0.22 0.01 255);background:white" value="{{ courseIdx }}" onChange="{{ onSelectCourse }}">
+        <sc-for list="{{ courses }}" as="c" hint-placeholder-count="3">
+          <option value="{{ $index }}">{{ c.code }} — {{ c.name }} ({{ c.section }})</option>
+        </sc-for>
+      </select>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:999px;background:oklch(0.9 0.02 255);color:oklch(0.35 0.1 255);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">อ</div>
+        <span style="font-size:14.5px;font-weight:600;color:oklch(0.35 0.01 255)">อาจารย์ผู้สอน</span>
+      </div>
+    </div>
+
+    <div style="padding:28px 32px;flex:1;overflow:auto">
+      <sc-if value="{{ isTabOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start">
+          <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:14px;padding:26px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+            <sc-if value="{{ classOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="font-weight:700;font-size:15px">สแกนเพื่อเช็คอิน — {{ currentCourse.code }}</div>
+              <div style="display:grid;grid-template-columns:repeat(21,8px);grid-template-rows:repeat(21,8px);background:white;padding:12px;border:1px solid oklch(0.9 0.008 255);border-radius:8px">
+                <sc-for list="{{ qrCells }}" as="cell" hint-placeholder-count="441">
+                  <div style="{{ cell.style }}"></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font-size:13px;color:oklch(0.48 0.01 255)">หมดอายุใน</div>
+                <div style="font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ countdownColor }}">{{ countdownLabel }}</div>
+              </div>
+              <button style="width:100%;padding:11px;border-radius:8px;border:1.5px solid oklch(0.7 0.15 25);background:white;color:oklch(0.55 0.18 25);font-weight:600;font-size:14.5px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.96 0.03 25)" onClick="{{ stopClass }}">ปิดคลาสเช็คอิน</button>
+            </sc-if>
+            <sc-if value="{{ classClosed }}" hint-placeholder-val="{{ true }}">
+              <div style="width:100%;aspect-ratio:1;background:repeating-linear-gradient(45deg,oklch(0.94 0.004 255),oklch(0.94 0.004 255) 8px,oklch(0.97 0.004 255) 8px,oklch(0.97 0.004 255) 16px);border-radius:8px;display:flex;align-items:center;justify-content:center;color:oklch(0.55 0.01 255);font-size:12.5px;font-family:monospace">QR CODE</div>
+              <div style="font-size:14px;color:oklch(0.48 0.01 255);line-height:1.6">คลาสยังไม่เปิด — กดปุ่มด้านล่างเพื่อเริ่มเช็คชื่อสำหรับ<br/><strong>{{ currentCourse.code }} {{ currentCourse.name }}</strong></div>
+              <button style="width:100%;padding:12px;border-radius:9px;border:none;background:oklch(0.47 0.14 255);color:white;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.4 0.14 255)" onClick="{{ openClass }}">เปิดคลาสเช็คอิน</button>
+            </sc-if>
+          </div>
+
+          <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:14px;padding:24px;min-height:420px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px">
+              <div style="font-weight:700;font-size:16.5px">นักศึกษาที่เช็คอินแล้ว</div>
+              <div style="font-size:14px;color:oklch(0.48 0.01 255)">{{ checkedInCount }} / {{ currentCourse.totalStudents }} คน</div>
+            </div>
+            <sc-if value="{{ hasCheckedIn }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ checkedInRows }}" as="row" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid oklch(0.94 0.004 255)">
+                    <div style="width:34px;height:34px;border-radius:999px;background:oklch(0.93 0.02 255);color:oklch(0.4 0.12 255);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">{{ row.initial }}</div>
+                    <div style="flex:1;min-width:0;overflow:hidden">
+                      <div style="font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</div>
+                      <div style="font-size:12.5px;color:oklch(0.55 0.01 255);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.studentId }}</div>
+                    </div>
+                    <div style="flex-shrink:0;min-width:64px;text-align:right;font-size:12.5px;color:oklch(0.55 0.01 255);font-variant-numeric:tabular-nums;white-space:nowrap">{{ row.time }}</div>
+                    <div style="flex-shrink:0;padding:5px 11px;border-radius:999px;background:oklch(0.95 0.03 150);color:oklch(0.5 0.14 150);font-size:12px;font-weight:600;white-space:nowrap">เช็คอินแล้ว</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noCheckedIn }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:60px 0;color:oklch(0.6 0.01 255)">
+                <div style="font-size:14.5px">ยังไม่มีนักศึกษาเช็คอิน</div>
+                <div style="font-size:13px">เปิดคลาสเพื่อเริ่มรับการเช็คอิน</div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTabSummary }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div class="no-print" style="display:flex;justify-content:flex-end;gap:10px">
+            <button style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;border:1px solid oklch(0.87 0.008 255);background:white;color:oklch(0.3 0.01 255);font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.97 0.004 255)" onClick="{{ exportPdf }}">Export PDF</button>
+            <button style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;border:1px solid oklch(0.87 0.008 255);background:white;color:oklch(0.3 0.01 255);font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit" style-hover="background:oklch(0.97 0.004 255)" onClick="{{ exportExcel }}">Export Excel (.xlsx)</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+            <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:12px;padding:20px">
+              <div style="font-size:13px;color:oklch(0.5 0.01 255);margin-bottom:6px">อัตราการเข้าเรียนเฉลี่ย</div>
+              <div style="font-size:30px;font-weight:700;color:{{ avgColor }}">{{ avgPercentLabel }}</div>
+            </div>
+            <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:12px;padding:20px">
+              <div style="font-size:13px;color:oklch(0.5 0.01 255);margin-bottom:6px">จำนวนครั้งที่เปิดเรียน</div>
+              <div style="font-size:30px;font-weight:700">{{ currentCourse.totalSessions }} <span style="font-size:15px;font-weight:500;color:oklch(0.5 0.01 255)">ครั้ง</span></div>
+            </div>
+            <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:12px;padding:20px">
+              <div style="font-size:13px;color:oklch(0.5 0.01 255);margin-bottom:6px">จำนวนนักศึกษา</div>
+              <div style="font-size:30px;font-weight:700">{{ currentCourse.totalStudents }} <span style="font-size:15px;font-weight:500;color:oklch(0.5 0.01 255)">คน</span></div>
+            </div>
+          </div>
+
+          <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:14px;padding:24px">
+            <div style="font-weight:700;font-size:16px;margin-bottom:16px">อัตราเข้าเรียนรายครั้ง</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ sessionBars }}" as="s" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:150px 1fr 44px;align-items:center;gap:12px">
+                  <div style="font-size:13px;color:oklch(0.5 0.01 255)">{{ s.label }}</div>
+                  <div style="height:9px;background:oklch(0.94 0.004 255);border-radius:999px;overflow:hidden"><div style="height:100%;width:{{ s.barWidth }};background:{{ s.color }};border-radius:999px"></div></div>
+                  <div style="font-size:13px;font-weight:600;text-align:right">{{ s.percentLabel }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:14px;padding:24px">
+            <div style="font-weight:700;font-size:16px;margin-bottom:16px">สรุปการเข้าเรียนรายบุคคล</div>
+            <div style="display:grid;grid-template-columns:32px 1fr 120px 130px 150px;gap:12px;padding:0 4px 10px;font-size:12.5px;font-weight:600;color:oklch(0.5 0.01 255);border-bottom:1px solid oklch(0.9 0.008 255)">
+              <div>#</div><div>ชื่อ-สกุล</div><div>รหัสนักศึกษา</div><div>เข้าเรียน</div><div>สถานะ</div>
+            </div>
+            <sc-for list="{{ studentRows }}" as="st" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:32px 1fr 120px 130px 150px;gap:12px;padding:12px 4px;align-items:center;border-bottom:1px solid oklch(0.95 0.004 255);font-size:14px">
+                <div style="color:oklch(0.55 0.01 255)">{{ st.idx }}</div>
+                <div style="font-weight:600">{{ st.name }}</div>
+                <div style="color:oklch(0.5 0.01 255)">{{ st.studentId }}</div>
+                <div style="color:oklch(0.5 0.01 255)">{{ st.attendedLabel }}</div>
+                <div style="display:inline-flex;padding:5px 11px;border-radius:999px;background:{{ st.badgeBg }};color:{{ st.color }};font-size:12.5px;font-weight:600;width:fit-content">{{ st.statusLabel }} · {{ st.pctLabel }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </main>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStudent }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:18px;padding:32px 16px">
+  <div style="width:100%;max-width:400px;display:flex;justify-content:flex-end">
+    <a href="#" style="font-size:13.5px;color:oklch(0.5 0.01 255);text-decoration:none" style-hover="color:oklch(0.47 0.14 255)" onClick="{{ logout }}">ออกจากระบบ</a>
+  </div>
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" title="ClassCheck" hint-size="375,812">
+    <div style="display:flex;flex-direction:column;height:100%;background:oklch(0.97 0.004 255)">
+      <sc-if value="{{ isStudentTabCourses }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;overflow:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-weight:700;font-size:19px">{{ studentInfo.name }}</div>
+            <div style="font-size:13px;color:oklch(0.5 0.01 255)">รหัสนักศึกษา {{ studentInfo.studentId }}</div>
+          </div>
+          <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:14px;padding:20px;display:flex;align-items:center;gap:18px">
+            <div style="width:76px;height:76px;border-radius:999px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ overallRing }}">
+              <div style="width:58px;height:58px;border-radius:999px;background:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:{{ overallColor }}">{{ overallPercentLabel }}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div style="font-weight:700;font-size:15px">อัตราเข้าเรียนรวม</div>
+              <div style="font-size:13px;color:oklch(0.5 0.01 255)">เข้าเรียนแล้ว {{ overallAttended }} จาก {{ overallTotal }} ครั้ง</div>
+            </div>
+          </div>
+          <div style="font-weight:700;font-size:15.5px;margin-top:4px">รายวิชาที่ลงทะเบียน</div>
+          <sc-for list="{{ studentCourses }}" as="c" hint-placeholder-count="3">
+            <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font-weight:700;font-size:14.5px">{{ c.code }}</div>
+                <div style="font-size:13px;font-weight:700;color:{{ c.color }}">{{ c.pctLabel }}</div>
+              </div>
+              <div style="font-size:13px;color:oklch(0.5 0.01 255);margin-top:-6px">{{ c.name }}</div>
+              <div style="height:8px;background:oklch(0.94 0.004 255);border-radius:999px;overflow:hidden"><div style="height:100%;width:{{ c.pctLabel }};background:{{ c.color }};border-radius:999px"></div></div>
+              <div style="font-size:12.5px;color:oklch(0.55 0.01 255)">เข้าเรียน {{ c.attended }} / {{ c.total }} ครั้ง</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStudentTabHistory }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-weight:700;font-size:18px;margin-bottom:4px">ประวัติการเช็คอิน</div>
+          <sc-for list="{{ studentHistory }}" as="h" hint-placeholder-count="6">
+            <div style="background:white;border:1px solid oklch(0.9 0.008 255);border-radius:11px;padding:13px 14px;display:flex;align-items:center;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0">
+                <div style="font-weight:600;font-size:14px">{{ h.course }}</div>
+                <div style="font-size:12.5px;color:oklch(0.55 0.01 255)">{{ h.date }} · {{ h.time }} น.</div>
+              </div>
+              <div style="padding:5px 10px;border-radius:999px;background:oklch(0.95 0.03 150);color:oklch(0.5 0.14 150);font-size:11.5px;font-weight:600;flex-shrink:0">เช็คอินสำเร็จ</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStudentTabScan }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:16px">
+          <div style="width:220px;height:220px;background:repeating-linear-gradient(45deg,oklch(0.94 0.004 255),oklch(0.94 0.004 255) 8px,oklch(0.97 0.004 255) 8px,oklch(0.97 0.004 255) 16px);border-radius:16px;border:2px dashed oklch(0.8 0.01 255);display:flex;align-items:center;justify-content:center;color:oklch(0.55 0.01 255);font-size:12px;font-family:monospace;text-align:center;padding:12px">CAMERA VIEWFINDER</div>
+          <div style="font-size:13.5px;color:oklch(0.5 0.01 255);text-align:center">เล็ง QR Code ที่อาจารย์แสดงหน้าห้องเรียน</div>
+          <button style="padding:13px 26px;border-radius:9px;border:none;background:oklch(0.47 0.14 255);color:white;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit" onClick="{{ simulateScan }}">จำลองการสแกนสำเร็จ</button>
+          <sc-if value="{{ showScanToast }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:10px 18px;border-radius:9px;background:oklch(0.95 0.03 150);color:oklch(0.5 0.14 150);font-weight:600;font-size:13.5px">เช็คอินสำเร็จ!</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <div style="display:flex;border-top:1px solid oklch(0.9 0.008 255);background:white">
+        <button style="{{ tabCoursesStyle }}" onClick="{{ setStudentTabCourses }}">รายวิชา</button>
+        <button style="{{ tabScanStyle }}" onClick="{{ setStudentTabScan }}">สแกน QR</button>
+        <button style="{{ tabHistoryStyle }}" onClick="{{ setStudentTabHistory }}">ประวัติ</button>
+      </div>
+    </div>
+  </x-import>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function generateQR(seed) {
+  const n = 21;
+  const grid = Array.from({ length: n }, () => Array(n).fill(false));
+  function setFinder(r0, c0) {
+    for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) {
+      const onBorder = r === 0 || r === 6 || c === 0 || c === 6;
+      const inCenter = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+      grid[r0 + r][c0 + c] = onBorder || inCenter;
+    }
+  }
+  setFinder(0, 0); setFinder(0, n - 7); setFinder(n - 7, 0);
+  let s = seed || 1;
+  function rand() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    const inTL = r < 8 && c < 8, inTR = r < 8 && c >= n - 8, inBL = r >= n - 8 && c < 8;
+    if (inTL || inTR || inBL) continue;
+    grid[r][c] = rand() > 0.55;
+  }
+  const cells = [];
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    cells.push({ key: r + '-' + c, style: 'width:8px;height:8px;background:' + (grid[r][c] ? 'oklch(0.2 0.01 255)' : 'white') });
+  }
+  return cells;
+}
+
+const SUCCESS = 'oklch(0.5 0.14 150)', SUCCESS_BG = 'oklch(0.95 0.03 150)';
+const AMBER = 'oklch(0.58 0.15 70)', AMBER_BG = 'oklch(0.95 0.04 70)';
+const RED = 'oklch(0.55 0.18 25)', RED_BG = 'oklch(0.95 0.03 25)';
+
+function pctColor(p) { return p >= 80 ? SUCCESS : p >= 60 ? AMBER : RED; }
+function pctBg(p) { return p >= 80 ? SUCCESS_BG : p >= 60 ? AMBER_BG : RED_BG; }
+function pctStatus(p) { return p >= 80 ? 'ผ่านเกณฑ์' : p >= 60 ? 'เฝ้าระวัง' : 'ไม่ผ่านเกณฑ์'; }
+function initials(name) { const parts = name.replace('นาย', '').replace('นางสาว', '').trim(); return parts.charAt(0); }
+
+class Component extends DCLogic {
+  state = {
+    view: 'landing',
+    loginRole: 'teacher',
+    teacherTab: 'open',
+    courseIdx: 0,
+    classOpen: false,
+    secondsLeft: 900,
+    checkedIn: [],
+    studentTab: 'courses',
+    showScanToast: false,
+  };
+
+  courses = [
+    { id: 1, code: 'CS201', name: 'โครงสร้างข้อมูลและอัลกอริทึม', section: 'กลุ่มเรียน 1', totalStudents: 42, totalSessions: 14 },
+    { id: 2, code: 'SE305', name: 'วิศวกรรมซอฟต์แวร์', section: 'กลุ่มเรียน 2', totalStudents: 35, totalSessions: 12 },
+    { id: 3, code: 'AI410', name: 'ปัญญาประดิษฐ์เบื้องต้น', section: 'กลุ่มเรียน 1', totalStudents: 28, totalSessions: 10 },
+  ];
+
+  studentPool = [
+    { name: 'นายกิตติศักดิ์ แสงทอง', studentId: '6512001' },
+    { name: 'นางสาวปาริชาติ ศรีสุข', studentId: '6512014' },
+    { name: 'นายธนกร วงศ์เจริญ', studentId: '6512022' },
+    { name: 'นางสาวชนิกานต์ พรหมมา', studentId: '6512033' },
+    { name: 'นายอนุชา ทองดี', studentId: '6512045' },
+    { name: 'นางสาวศิริพร มณีวรรณ', studentId: '6512056' },
+    { name: 'นายวรกันต์ สายทอง', studentId: '6512067' },
+    { name: 'นางสาวเบญจวรรณ ใจดี', studentId: '6512078' },
+  ];
+
+  sessionPresent = {
+    1: [40, 38, 41, 35, 39, 37],
+    2: [30, 33, 29, 32, 31, 28],
+    3: [26, 25, 27, 20, 24, 23],
+  };
+
+  studentRowsData = {
+    1: [
+      { name: 'นายกิตติศักดิ์ แสงทอง', studentId: '6512001', attended: 13 },
+      { name: 'นางสาวปาริชาติ ศรีสุข', studentId: '6512014', attended: 14 },
+      { name: 'นายธนกร วงศ์เจริญ', studentId: '6512022', attended: 9 },
+      { name: 'นางสาวชนิกานต์ พรหมมา', studentId: '6512033', attended: 11 },
+      { name: 'นายอนุชา ทองดี', studentId: '6512045', attended: 7 },
+    ],
+    2: [
+      { name: 'นางสาวศิริพร มณีวรรณ', studentId: '6512056', attended: 11 },
+      { name: 'นายวรกันต์ สายทอง', studentId: '6512067', attended: 8 },
+      { name: 'นางสาวเบญจวรรณ ใจดี', studentId: '6512078', attended: 12 },
+      { name: 'นายกิตติศักดิ์ แสงทอง', studentId: '6512001', attended: 6 },
+    ],
+    3: [
+      { name: 'นางสาวปาริชาติ ศรีสุข', studentId: '6512014', attended: 10 },
+      { name: 'นายธนกร วงศ์เจริญ', studentId: '6512022', attended: 9 },
+      { name: 'นางสาวชนิกานต์ พรหมมา', studentId: '6512033', attended: 5 },
+    ],
+  };
+
+  studentInfo = { name: 'นายศุภกร ตันติวงศ์', studentId: '6412034' };
+  studentCourses = [
+    { code: 'CS201', name: 'โครงสร้างข้อมูลและอัลกอริทึม', attended: 12, total: 14 },
+    { code: 'SE305', name: 'วิศวกรรมซอฟต์แวร์', attended: 9, total: 12 },
+    { code: 'AI410', name: 'ปัญญาประดิษฐ์เบื้องต้น', attended: 10, total: 10 },
+  ];
+  studentHistory = [
+    { date: '18 ก.ค. 2569', time: '09:05', course: 'CS201 โครงสร้างข้อมูลฯ' },
+    { date: '17 ก.ค. 2569', time: '13:02', course: 'SE305 วิศวกรรมซอฟต์แวร์' },
+    { date: '15 ก.ค. 2569', time: '09:07', course: 'CS201 โครงสร้างข้อมูลฯ' },
+    { date: '14 ก.ค. 2569', time: '10:31', course: 'AI410 ปัญญาประดิษฐ์เบื้องต้น' },
+    { date: '11 ก.ค. 2569', time: '09:04', course: 'CS201 โครงสร้างข้อมูลฯ' },
+    { date: '10 ก.ค. 2569', time: '13:00', course: 'SE305 วิศวกรรมซอฟต์แวร์' },
+  ];
+
+  features = [
+    { title: 'เปิดคลาสด้วย QR', desc: 'อาจารย์เปิดคลาสได้ในคลิกเดียว พร้อมตั้งเวลาหมดอายุอัตโนมัติ', tint: 'oklch(0.9 0.03 255)' },
+    { title: 'เช็คชื่อเรียลไทม์', desc: 'ดูรายชื่อนักศึกษาที่เช็คอินสดขณะเรียน ไม่ต้องขานชื่อทีละคน', tint: 'oklch(0.9 0.03 150)' },
+    { title: 'สรุปผลอัตโนมัติ', desc: 'นักศึกษาติดตามเปอร์เซ็นต์เข้าเรียนของตนเองได้ทุกวิชา', tint: 'oklch(0.9 0.03 70)' },
+  ];
+
+  goLogin = () => this.setState({ view: 'login' });
+  goLoginTeacher = () => this.setState({ view: 'login', loginRole: 'teacher' });
+  goLoginStudent = () => this.setState({ view: 'login', loginRole: 'student' });
+  backHome = (e) => { e.preventDefault(); this.setState({ view: 'landing' }); };
+  selectRoleTeacher = () => this.setState({ loginRole: 'teacher' });
+  selectRoleStudent = () => this.setState({ loginRole: 'student' });
+  doLogin = (e) => {
+    e.preventDefault();
+    this.setState({ view: this.state.loginRole === 'teacher' ? 'teacher' : 'student', teacherTab: 'open' });
+  };
+  logout = (e) => { if (e && e.preventDefault) e.preventDefault(); this.stopClass(); this.setState({ view: 'landing' }); };
+
+  setTabOpen = () => this.setState({ teacherTab: 'open' });
+  setTabSummary = () => this.setState({ teacherTab: 'summary' });
+  onSelectCourse = (e) => { this.stopClass(); this.setState({ courseIdx: Number(e.target.value) }); };
+
+  openClass = () => {
+    this.setState({ classOpen: true, secondsLeft: 900, checkedIn: [] });
+    this._timer = setInterval(() => {
+      this.setState((s) => {
+        const next = Math.max(0, s.secondsLeft - 1);
+        if (next === 0) { clearInterval(this._timer); clearInterval(this._checkinTimer); return { secondsLeft: 0, classOpen: false }; }
+        return { secondsLeft: next };
+      });
+    }, 1000);
+    this._checkinTimer = setInterval(() => {
+      this.setState((s) => {
+        const course = this.courses[s.courseIdx];
+        const cap = Math.min(this.studentPool.length, course.totalStudents);
+        if (s.checkedIn.length >= cap) return null;
+        const next = this.studentPool[s.checkedIn.length];
+        const now = new Date();
+        const time = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return { checkedIn: [...s.checkedIn, { ...next, time }] };
+      });
+    }, 2200);
+  };
+  stopClass = () => {
+    clearInterval(this._timer); clearInterval(this._checkinTimer);
+    this.setState({ classOpen: false });
+  };
+  componentWillUnmount() { clearInterval(this._timer); clearInterval(this._checkinTimer); }
+
+  exportPdf = () => { window.print(); };
+  exportExcel = () => {
+    const course = this.courses[this.state.courseIdx];
+    const rows = this.studentRowsData[course.id].map((r, i) => {
+      const pct = Math.round((r.attended / course.totalSessions) * 100);
+      return {
+        'ลำดับ': i + 1, 'ชื่อ-สกุล': r.name, 'รหัสนักศึกษา': r.studentId,
+        'เข้าเรียน': r.attended + ' / ' + course.totalSessions,
+        'เปอร์เซ็นต์': pct + '%', 'สถานะ': pctStatus(pct),
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'สรุปผล');
+    XLSX.writeFile(wb, course.code + '-attendance-summary.xlsx');
+  };
+  setStudentTabCourses = () => this.setState({ studentTab: 'courses' });
+  setStudentTabHistory = () => this.setState({ studentTab: 'history' });
+  setStudentTabScan = () => this.setState({ studentTab: 'scan' });
+  simulateScan = () => {
+    this.setState({ showScanToast: true });
+    setTimeout(() => this.setState({ showScanToast: false, studentTab: 'history' }), 1400);
+  };
+
+  renderVals() {
+    const s = this.state;
+    const course = this.courses[s.courseIdx];
+    const mm = String(Math.floor(s.secondsLeft / 60)).padStart(2, '0');
+    const ss = String(s.secondsLeft % 60).padStart(2, '0');
+
+    const activeTabStyle = 'background:white;color:oklch(0.22 0.01 255);box-shadow:0 1px 3px oklch(0 0 0 / 0.08)';
+    const inactiveTabStyle = 'background:transparent;color:oklch(0.5 0.01 255)';
+
+    const checkedInRows = s.checkedIn.slice().reverse().map((row, i) => ({
+      ...row, idx: s.checkedIn.length - i, initial: initials(row.name),
+    }));
+
+    const sessions = this.sessionPresent[course.id];
+    const sessionBars = sessions.map((present, i) => {
+      const pct = Math.round((present / course.totalStudents) * 100);
+      return { label: 'ครั้งที่ ' + (i + 1), percentLabel: pct + '%', barWidth: pct + '%', color: pctColor(pct) };
+    });
+    const avgPercent = Math.round(sessions.reduce((a, p) => a + Math.round((p / course.totalStudents) * 100), 0) / sessions.length);
+
+    const studentRows = this.studentRowsData[course.id].map((r, i) => {
+      const pct = Math.round((r.attended / course.totalSessions) * 100);
+      return {
+        idx: i + 1, name: r.name, studentId: r.studentId, pctLabel: pct + '%',
+        attendedLabel: r.attended + ' / ' + course.totalSessions,
+        color: pctColor(pct), badgeBg: pctBg(pct), statusLabel: pctStatus(pct),
+      };
+    });
+
+    const studentCourses = this.studentCourses.map((c) => {
+      const pct = Math.round((c.attended / c.total) * 100);
+      return { ...c, pctLabel: pct + '%', color: pctColor(pct) };
+    });
+    const overallAttended = this.studentCourses.reduce((a, c) => a + c.attended, 0);
+    const overallTotal = this.studentCourses.reduce((a, c) => a + c.total, 0);
+    const overallPercent = Math.round((overallAttended / overallTotal) * 100);
+
+    return {
+      isLanding: s.view === 'landing',
+      isLogin: s.view === 'login',
+      isTeacher: s.view === 'teacher',
+      isStudent: s.view === 'student',
+      goLogin: this.goLogin, goLoginTeacher: this.goLoginTeacher, goLoginStudent: this.goLoginStudent,
+      backHome: this.backHome, doLogin: this.doLogin, logout: this.logout,
+      features: this.features,
+
+      teacherTabStyle: s.loginRole === 'teacher' ? activeTabStyle : inactiveTabStyle,
+      studentTabStyle: s.loginRole === 'student' ? activeTabStyle : inactiveTabStyle,
+      selectRoleTeacher: this.selectRoleTeacher, selectRoleStudent: this.selectRoleStudent,
+      loginIdLabel: s.loginRole === 'teacher' ? 'อีเมล/รหัสอาจารย์' : 'รหัสนักศึกษา',
+      loginIdPlaceholder: s.loginRole === 'teacher' ? 'teacher@sru.ac.th' : '6412034',
+
+      courses: this.courses, courseIdx: s.courseIdx, onSelectCourse: this.onSelectCourse,
+      currentCourse: course,
+      navOpenStyle: 'text-align:left;padding:10px 12px;border-radius:8px;border:none;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;' + (s.teacherTab === 'open' ? 'background:oklch(0.47 0.14 255);color:white' : 'background:transparent;color:oklch(0.78 0.01 255)'),
+      navSummaryStyle: 'text-align:left;padding:10px 12px;border-radius:8px;border:none;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:2px;' + (s.teacherTab === 'summary' ? 'background:oklch(0.47 0.14 255);color:white' : 'background:transparent;color:oklch(0.78 0.01 255)'),
+      setTabOpen: this.setTabOpen, setTabSummary: this.setTabSummary,
+      isTabOpen: s.teacherTab === 'open', isTabSummary: s.teacherTab === 'summary',
+
+      classOpen: s.classOpen, classClosed: !s.classOpen,
+      openClass: this.openClass, stopClass: this.stopClass,
+      qrCells: generateQR(course.id * 37 + 1),
+      countdownLabel: mm + ':' + ss,
+      countdownColor: s.secondsLeft < 60 ? RED : 'oklch(0.22 0.01 255)',
+      checkedInCount: s.checkedIn.length, checkedInRows, hasCheckedIn: s.checkedIn.length > 0, noCheckedIn: s.checkedIn.length === 0,
+
+      exportPdf: this.exportPdf, exportExcel: this.exportExcel,
+      avgPercentLabel: avgPercent + '%', avgColor: pctColor(avgPercent),
+      sessionBars, studentRows,
+
+      isStudentTabCourses: s.studentTab === 'courses', isStudentTabHistory: s.studentTab === 'history', isStudentTabScan: s.studentTab === 'scan',
+      setStudentTabCourses: this.setStudentTabCourses, setStudentTabHistory: this.setStudentTabHistory, setStudentTabScan: this.setStudentTabScan,
+      tabCoursesStyle: 'flex:1;padding:13px 0;border:none;background:transparent;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;' + (s.studentTab === 'courses' ? 'color:oklch(0.47 0.14 255)' : 'color:oklch(0.55 0.01 255)'),
+      tabHistoryStyle: 'flex:1;padding:13px 0;border:none;background:transparent;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;' + (s.studentTab === 'history' ? 'color:oklch(0.47 0.14 255)' : 'color:oklch(0.55 0.01 255)'),
+      tabScanStyle: 'flex:1;padding:13px 0;border:none;background:transparent;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;' + (s.studentTab === 'scan' ? 'color:oklch(0.47 0.14 255)' : 'color:oklch(0.55 0.01 255)'),
+      simulateScan: this.simulateScan, showScanToast: s.showScanToast,
+
+      studentInfo: this.studentInfo, studentCourses, studentHistory: this.studentHistory,
+      overallPercentLabel: overallPercent + '%', overallAttended, overallTotal,
+      overallColor: pctColor(overallPercent),
+      overallRing: 'conic-gradient(' + pctColor(overallPercent) + ' ' + overallPercent + '%, oklch(0.92 0.006 255) 0)',
+    };
+  }
+}
+
+</script>
+</body>
+</html>
