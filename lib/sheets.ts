@@ -13,6 +13,7 @@
 import crypto from "node:crypto";
 
 import { requireEnv } from "@/lib/env";
+import type { SessionRow } from "@/lib/session";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
@@ -128,4 +129,45 @@ export async function sessionIdExists(sessionId: string): Promise<boolean> {
   const rows = await getRows("sessions");
   // Skip the header row (row 0) if present.
   return rows.slice(1).some((row) => row[0] === sessionId);
+}
+
+/**
+ * Fetch a single session row by id (UC2 precondition: session must exist and
+ * be "open" before a scan is accepted). Returns null if not found.
+ */
+export async function getSession(sessionId: string): Promise<SessionRow | null> {
+  const rows = await getRows("sessions");
+  const row = rows.slice(1).find((r) => r[0] === sessionId);
+  if (!row) return null;
+  return {
+    session_id: row[0] ?? "",
+    date: row[1] ?? "",
+    period: row[2] ?? "",
+    status: row[3] === "closed" ? "closed" : "open",
+    opened_at: row[4] ?? "",
+    closed_at: row[5] ?? "",
+  };
+}
+
+/**
+ * Look up a student_id in the master list (FR8). Returns the student's
+ * full_name if found, or null if the id is not in `students`.
+ */
+export async function findStudentName(studentId: string): Promise<string | null> {
+  const rows = await getRows("students");
+  const row = rows.slice(1).find((r) => r[0] === studentId);
+  return row ? (row[1] ?? "") : null;
+}
+
+/**
+ * Check whether (student_id, session_id) already has an attendance_log row
+ * — the uniqueness constraint data-dictionary.md requires be enforced in
+ * code (UC2 exception: scanning twice must not write a duplicate row).
+ */
+export async function attendanceExists(
+  studentId: string,
+  sessionId: string,
+): Promise<boolean> {
+  const rows = await getRows("attendance_log");
+  return rows.slice(1).some((r) => r[0] === studentId && r[1] === sessionId);
 }

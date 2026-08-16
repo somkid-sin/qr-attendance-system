@@ -51,3 +51,30 @@ export function currentWindow(now: number = Date.now()): number {
 export function getStaticToken(sessionId: string): string {
   return deriveToken(sessionId, "static");
 }
+
+/** The current window's token for a session — what the rotating QR encodes. */
+export function getCurrentToken(sessionId: string, now: number = Date.now()): string {
+  return deriveToken(sessionId, String(currentWindow(now)));
+}
+
+/** Seconds remaining until the current window rotates. */
+export function secondsUntilNextWindow(now: number = Date.now()): number {
+  const elapsed = (now / 1000) % WINDOW_SECONDS;
+  return Math.ceil(WINDOW_SECONDS - elapsed);
+}
+
+/**
+ * Verify a scanned token against the current window ± 1 (ADR2: tolerate
+ * clock skew between when the QR was rendered and when it was scanned).
+ */
+export function verifyToken(
+  sessionId: string,
+  token: string,
+  now: number = Date.now(),
+): boolean {
+  const window = currentWindow(now);
+  for (const w of [window - 1, window, window + 1]) {
+    if (deriveToken(sessionId, String(w)) === token) return true;
+  }
+  return false;
+}

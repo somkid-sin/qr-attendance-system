@@ -1,11 +1,10 @@
-import { headers } from "next/headers";
 import Link from "next/link";
-import QRCode from "qrcode";
 
-import { optionalEnv } from "@/lib/env";
-import { getStaticToken } from "@/lib/token";
+import { renderCurrentQr } from "@/lib/qr";
+import { secondsUntilNextWindow } from "@/lib/token";
 import { SUBJECT } from "@/lib/course";
 import { badge, card, color } from "@/app/ui/theme";
+import { RotatingQr } from "./rotating-qr";
 
 export const dynamic = "force-dynamic";
 
@@ -21,15 +20,6 @@ function parseSessionId(sessionId: string): { date: string; section: string } {
   return { date, section };
 }
 
-async function baseUrl(): Promise<string> {
-  const configured = optionalEnv("NEXT_PUBLIC_APP_URL");
-  if (configured) return configured.replace(/\/$/, "");
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
-
 export default async function SessionQrPage({
   params,
 }: {
@@ -38,17 +28,9 @@ export default async function SessionQrPage({
   const { sessionId } = await params;
   const { date, section } = parseSessionId(sessionId);
 
-  // Sprint 1: a single, non-rotating token (rotation is Sprint 2).
-  const token = getStaticToken(sessionId);
-  const checkinUrl = `${await baseUrl()}/checkin?s=${encodeURIComponent(
-    sessionId,
-  )}&t=${encodeURIComponent(token)}`;
-
-  const qrDataUrl = await QRCode.toDataURL(checkinUrl, {
-    width: 320,
-    margin: 1,
-    color: { dark: "#1a1c2eff", light: "#ffffffff" },
-  });
+  // NFR2: token rotates every 15s — this is just the window active right now.
+  const { qrDataUrl } = await renderCurrentQr(sessionId);
+  const secondsLeft = secondsUntilNextWindow();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18, maxWidth: 460 }}>
@@ -62,18 +44,11 @@ export default async function SessionQrPage({
       </div>
 
       <div style={{ ...card, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={qrDataUrl}
-          alt={`QR Code สำหรับ session ${sessionId}`}
-          width={320}
-          height={320}
-          style={{ borderRadius: 8, border: `1px solid ${color.border}` }}
+        <RotatingQr
+          sessionId={sessionId}
+          initialQrDataUrl={qrDataUrl}
+          initialSecondsLeft={secondsLeft}
         />
-        <div style={{ fontSize: 13, color: color.muted }}>
-          Token (คงที่สำหรับ Sprint 1):{" "}
-          <code style={{ fontSize: 13, color: color.text }}>{token}</code>
-        </div>
       </div>
 
       <dl style={{ ...card, margin: 0, display: "grid", gridTemplateColumns: "auto 1fr", rowGap: 10, columnGap: 16, fontSize: 14 }}>
@@ -94,8 +69,8 @@ export default async function SessionQrPage({
           lineHeight: 1.6,
         }}
       >
-        หมายเหตุ: Sprint 1 แสดง QR แบบ token คงที่ ยังไม่หมุนทุก 15 วินาที และยัง
-        ไม่มีหน้าสแกนของนักศึกษา (เป็นงาน Sprint 2)
+        QR หมุน token ใหม่ทุก 15 วินาทีอัตโนมัติ (NFR2) — ให้หน้าจอนี้เปิดค้างไว้
+        หน้าห้องระหว่างเช็คชื่อ
       </div>
 
       <Link
