@@ -20,6 +20,16 @@ import { requireEnv } from "@/lib/env";
 /** Token rotation window in seconds (NFR2). Used by Sprint 2 rotation. */
 export const WINDOW_SECONDS = 15;
 
+/**
+ * How long a displayed token stays acceptable after it was shown (product
+ * decision, 2569-08-16): real students need more than one 15s window to
+ * scan, type their 13-digit id, and submit. The QR still visually rotates
+ * every 15s per NFR2 — only the server-side acceptance window widened, so a
+ * screenshotted QR is still only useful for this many seconds, not
+ * indefinitely.
+ */
+export const CHECKIN_TOLERANCE_SECONDS = 180;
+
 function hmac(key: string | Buffer, message: string): Buffer {
   return crypto.createHmac("sha256", key).update(message).digest();
 }
@@ -64,8 +74,9 @@ export function secondsUntilNextWindow(now: number = Date.now()): number {
 }
 
 /**
- * Verify a scanned token against the current window ± 1 (ADR2: tolerate
- * clock skew between when the QR was rendered and when it was scanned).
+ * Verify a scanned token against a range of recent windows: up to
+ * CHECKIN_TOLERANCE_SECONDS in the past (time to scan, type, and submit),
+ * plus one window forward (ADR2: clock skew between server and QR render).
  */
 export function verifyToken(
   sessionId: string,
@@ -73,7 +84,8 @@ export function verifyToken(
   now: number = Date.now(),
 ): boolean {
   const window = currentWindow(now);
-  for (const w of [window - 1, window, window + 1]) {
+  const windowsBack = Math.ceil(CHECKIN_TOLERANCE_SECONDS / WINDOW_SECONDS);
+  for (let w = window - windowsBack; w <= window + 1; w++) {
     if (deriveToken(sessionId, String(w)) === token) return true;
   }
   return false;
