@@ -36,7 +36,19 @@
 3. **Nav ในหน้าอาจารย์** — เพิ่มลิงก์ "สร้าง session" / "รายงาน" ใน
    `app/teacher/layout.tsx` (ก่อนหน้านี้มีแค่ปุ่ม logout ปุ่มเดียว)
 
+4. **Export รายงานเป็น .xlsx** (เพิ่มทีหลัง ตามคำขอ 2569-08-17) —
+   `app/teacher/reports/[sessionId]/export/route.ts` (Route Handler, GET)
+   สร้างไฟล์ Excel จากข้อมูลชุดเดียวกับที่หน้ารายงานแสดง (หัวเรื่อง +
+   สรุปกลุ่ม/วันที่/คาบ/จำนวนมา + ตารางรายชื่อ) ปุ่ม "Export Excel (.xlsx)"
+   อยู่ในหน้ารายงาน ข้าง session switcher
+
 ## การตัดสินใจสำคัญ
+- **ใช้ SheetJS จาก CDN ของเขาเองแทน npm** — เวอร์ชันที่ publish บน npm
+  (`xlsx@0.18.5`) มี CVE 2 ตัวที่ **ไม่มี patch** (prototype pollution,
+  ReDoS — `GHSA-4r6h-8v6p-xvw6`, `GHSA-5pgg-2g8v-p4x9`) SheetJS หยุด
+  publish เวอร์ชันแก้ขึ้น npm แล้ว แนะนำให้ติดตั้งจาก
+  `cdn.sheetjs.com` โดยตรงแทน (`xlsx@0.20.3`, ไม่มี CVE ค้าง) จึงติดตั้ง
+  แบบนั้นใน `package.json` (`"xlsx": "https://cdn.sheetjs.com/..."`)
 - **ทำฟีเจอร์ปิด session ก่อนเริ่มหน้ารายงาน** (ตามที่ตกลงกันไว้ตอนวางแพลน)
   เพราะเป็น precondition ของ UC3 และเป็นช่องโหว่จริงที่พบระหว่างวางแผน
   ไม่ใช่แค่ทำตาม spec เฉย ๆ
@@ -45,7 +57,7 @@
   เดียวกันเท่านั้นที่เช็คชื่อ session นี้ได้ ตารางเลยควรมีแค่กลุ่มนั้น)
 
 ## นอกขอบเขต (ยังไม่ทำ)
-- Export PDF/Excel ของรายงาน (มีใน mockup แต่ไม่มีใน SRS)
+- Export PDF (มีใน mockup แต่ไม่มีใน SRS; Excel export ทำแล้วตามคำขอ)
 - หน้าสถิตินักศึกษา (ไม่มี auth ฝั่งนักศึกษา ไม่มี FR รองรับ)
 
 ## การทดสอบ (กับ Google Sheet จริง, Node v20.20.2)
@@ -58,6 +70,9 @@
 | พยายามเช็คชื่อ session ที่ปิดแล้ว | ✅ "session นี้ปิดรับเช็คชื่อแล้ว" บล็อกถูกต้อง |
 | หน้ารายงาน session ที่มีคนเช็คชื่อไปแล้ว 1 คน (จาก 7 คนกลุ่มเดียวกัน) | ✅ ตาราง 7 แถว, มา 1 ขาด 6 ตรงกับข้อมูลจริง |
 | สลับ session ผ่าน dropdown | ✅ นำทางไปหน้ารายงาน session อื่นถูกต้อง, roster/summary เปลี่ยนตามกลุ่ม |
+| กดปุ่ม Export → server ตอบ 200 (ผ่านเบราว์เซอร์, เห็นเป็น download ไม่ใช่ network request ปกติ) | ✅ |
+| ตรวจไฟล์ .xlsx จริง: generate ด้วย logic เดียวกับ route แล้ว round-trip อ่านกลับด้วย `XLSX.read` | ✅ ชื่อชีตภาษาไทย, หัวเรื่อง/สรุป/ตารางครบ 11 แถว, ข้อมูลนักศึกษาและสถานะมา/ขาดตรงกับ Sheet จริงทุกช่อง ไม่มีปัญหา encoding |
 
 ## `npm run build` / typecheck
-ผ่านทั้งคู่ รวม route ใหม่ `/teacher/reports` และ `/teacher/reports/[sessionId]`
+ผ่านทั้งคู่ รวม route ใหม่ `/teacher/reports`, `/teacher/reports/[sessionId]`,
+และ `/teacher/reports/[sessionId]/export`

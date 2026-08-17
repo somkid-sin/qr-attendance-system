@@ -73,10 +73,27 @@ export default async function SessionReportPage({
         </p>
       </div>
 
-      <SessionSwitcher
-        currentSessionId={sessionId}
-        sessions={allSessions.map((s) => ({ sessionId: s.session_id, label: sessionLabel(s) }))}
-      />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center" }}>
+        <SessionSwitcher
+          currentSessionId={sessionId}
+          sessions={allSessions.map((s) => ({ sessionId: s.session_id, label: sessionLabel(s) }))}
+        />
+        <a
+          href={`/teacher/reports/${sessionId}/export`}
+          style={{
+            padding: "9px 16px",
+            borderRadius: 8,
+            border: `1px solid ${color.border}`,
+            background: "white",
+            color: color.text,
+            fontWeight: 600,
+            fontSize: 13.5,
+            textDecoration: "none",
+          }}
+        >
+          Export Excel (.xlsx)
+        </a>
+      </div>
 
       <div style={{ ...card, display: "flex", flexWrap: "wrap", gap: 24 }}>
         <SummaryStat label="กลุ่มเรียน" value={section} />
