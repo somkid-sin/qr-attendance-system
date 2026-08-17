@@ -12,6 +12,7 @@ import { isValidPeriod, isValidSection } from "@/lib/course";
 import {
   appendRow,
   attendanceExists,
+  closeSession,
   findStudent,
   getSession,
   sessionIdExists,
@@ -143,6 +144,25 @@ export async function getSessionQrAction(sessionId: string): Promise<SessionQrRe
   await requireTeacher();
   const { qrDataUrl } = await renderCurrentQr(sessionId);
   return { qrDataUrl, secondsLeft: secondsUntilNextWindow() };
+}
+
+/**
+ * UC1 main flow ("...จนกว่าอาจารย์จะปิด session") / UC3 precondition: close
+ * a session so it stops accepting scans and becomes reportable. Bound to
+ * sessionId via .bind() when used as a <form action>.
+ */
+export async function closeSessionAction(
+  sessionId: string,
+  _formData: FormData,
+): Promise<void> {
+  await requireTeacher();
+  try {
+    await closeSession(sessionId, formatDateTime());
+  } catch (err) {
+    console.error("closeSessionAction failed:", err);
+    redirect(`/teacher/sessions/${sessionId}`);
+  }
+  redirect(`/teacher/reports/${sessionId}`);
 }
 
 export interface CheckinState {

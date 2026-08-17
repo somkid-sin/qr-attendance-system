@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { logoutAction } from "@/app/lib/actions";
 import { SUBJECT } from "@/lib/course";
 import { requireTeacher } from "@/lib/auth";
@@ -49,6 +51,21 @@ export default async function TeacherLayout({
             </span>
           </div>
         </div>
+
+        <nav style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <Link
+            href="/teacher/sessions/new"
+            style={{ fontSize: 13.5, fontWeight: 600, color: color.text, textDecoration: "none" }}
+          >
+            สร้าง session
+          </Link>
+          <Link
+            href="/teacher/reports"
+            style={{ fontSize: 13.5, fontWeight: 600, color: color.text, textDecoration: "none" }}
+          >
+            รายงาน
+          </Link>
+        </nav>
 
         <form action={logoutAction}>
           <button

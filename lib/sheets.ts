@@ -178,3 +178,66 @@ export async function attendanceExists(
   const rows = await getRows("attendance_log");
   return rows.slice(1).some((r) => r[0] === studentId && r[1] === sessionId);
 }
+
+/**
+ * Close a session: sets status=closed and closed_at (UC1 main flow ends
+ * "จนกว่าอาจารย์จะปิด session"; UC3 precondition needs a closed session).
+ * Also stops further check-ins, since checkinAction only accepts status="open".
+ */
+export async function closeSession(sessionId: string, closedAt: string): Promise<void> {
+  const rows = await getRows("sessions");
+  const dataRows = rows.slice(1);
+  const idx = dataRows.findIndex((r) => r[0] === sessionId);
+  if (idx < 0) throw new Error(`Session not found: ${sessionId}`);
+
+  const sheetRow = idx + 2; // +1 for the header row, +1 for 1-based row numbers
+  const openedAt = dataRows[idx][4] ?? "";
+  const range = encodeURIComponent(`sessions!D${sheetRow}:F${sheetRow}`);
+  await sheetsFetch(`/values/${range}?valueInputOption=USER_ENTERED`, {
+    method: "PUT",
+    body: JSON.stringify({ values: [["closed", openedAt, closedAt]] }),
+  });
+}
+
+/** All sessions (for the report's session picker), most recent first. */
+export async function getAllSessions(): Promise<SessionRow[]> {
+  const rows = await getRows("sessions");
+  return rows
+    .slice(1)
+    .map((row) => ({
+      session_id: row[0] ?? "",
+      date: row[1] ?? "",
+      period: row[2] ?? "",
+      status: (row[3] === "closed" ? "closed" : "open") as SessionRow["status"],
+      opened_at: row[4] ?? "",
+      closed_at: row[5] ?? "",
+    }))
+    .sort((a, b) => b.session_id.localeCompare(a.session_id));
+}
+
+export interface StudentRosterEntry {
+  studentId: string;
+  fullName: string;
+  section: string;
+}
+
+/** The full student master list (FR7) — used to build a per-section roster. */
+export async function getAllStudents(): Promise<StudentRosterEntry[]> {
+  const rows = await getRows("students");
+  return rows.slice(1).map((r) => ({
+    studentId: r[0] ?? "",
+    fullName: r[1] ?? "",
+    section: r[2] ?? "",
+  }));
+}
+
+/** student_ids that have an attendance_log row for this session (UC3). */
+export async function getAttendanceStudentIds(sessionId: string): Promise<Set<string>> {
+  const rows = await getRows("attendance_log");
+  return new Set(
+    rows
+      .slice(1)
+      .filter((r) => r[1] === sessionId)
+      .map((r) => r[0]),
+  );
+}
