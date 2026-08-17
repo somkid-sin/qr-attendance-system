@@ -78,21 +78,38 @@ export default async function SessionReportPage({
           currentSessionId={sessionId}
           sessions={allSessions.map((s) => ({ sessionId: s.session_id, label: sessionLabel(s) }))}
         />
-        <a
-          href={`/teacher/reports/${sessionId}/export`}
-          style={{
-            padding: "9px 16px",
-            borderRadius: 8,
-            border: `1px solid ${color.border}`,
-            background: "white",
-            color: color.text,
-            fontWeight: 600,
-            fontSize: 13.5,
-            textDecoration: "none",
-          }}
-        >
-          Export Excel (.xlsx)
-        </a>
+        <div style={{ display: "flex", gap: 10 }}>
+          <a
+            href={`/teacher/reports/${sessionId}/export`}
+            style={{
+              padding: "9px 16px",
+              borderRadius: 8,
+              border: `1px solid ${color.border}`,
+              background: "white",
+              color: color.text,
+              fontWeight: 600,
+              fontSize: 13.5,
+              textDecoration: "none",
+            }}
+          >
+            Export session นี้ (.xlsx)
+          </a>
+          <a
+            href={`/teacher/reports/${sessionId}/export-summary`}
+            style={{
+              padding: "9px 16px",
+              borderRadius: 8,
+              border: `1px solid ${color.border}`,
+              background: "white",
+              color: color.text,
+              fontWeight: 600,
+              fontSize: 13.5,
+              textDecoration: "none",
+            }}
+          >
+            Export สรุปทั้งเทอม กลุ่ม {section} (.xlsx)
+          </a>
+        </div>
       </div>
 
       <div style={{ ...card, display: "flex", flexWrap: "wrap", gap: 24 }}>

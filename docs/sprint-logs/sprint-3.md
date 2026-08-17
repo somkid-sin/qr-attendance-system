@@ -39,8 +39,18 @@
 4. **Export รายงานเป็น .xlsx** (เพิ่มทีหลัง ตามคำขอ 2569-08-17) —
    `app/teacher/reports/[sessionId]/export/route.ts` (Route Handler, GET)
    สร้างไฟล์ Excel จากข้อมูลชุดเดียวกับที่หน้ารายงานแสดง (หัวเรื่อง +
-   สรุปกลุ่ม/วันที่/คาบ/จำนวนมา + ตารางรายชื่อ) ปุ่ม "Export Excel (.xlsx)"
-   อยู่ในหน้ารายงาน ข้าง session switcher
+   สรุปกลุ่ม/วันที่/คาบ/จำนวนมา + ตารางรายชื่อ) ปุ่ม "Export session นี้
+   (.xlsx)" อยู่ในหน้ารายงาน ข้าง session switcher
+
+5. **Export สรุปทั้งเทอมต่อกลุ่มเรียน** (เพิ่มทีหลัง ตามคำขอ 2569-08-17) —
+   `app/teacher/reports/[sessionId]/export-summary/route.ts` รวมทุก
+   session ของกลุ่มเรียนเดียวกัน (ดึงจาก section ของ `sessionId`) เป็น
+   ตาราง matrix: แถว = นักศึกษา, คอลัมน์ = แต่ละ session (label ด้วยวันที่
+   เรียงเก่า→ใหม่) + คอลัมน์สรุปท้ายตาราง (มา X ครั้ง / ทั้งหมด Y / Z%)
+   เพิ่ม `lib/sheets.ts: getAttendanceBySession()` อ่าน `attendance_log`
+   ครั้งเดียวแล้ว group ตาม session_id (แทนที่จะอ่านทั้งชีตซ้ำต่อ session
+   เหมือนเรียก `getAttendanceStudentIds` วนลูป) ปุ่ม "Export สรุปทั้งเทอม
+   กลุ่ม X (.xlsx)" อยู่ข้าง export ต่อ session
 
 ## การตัดสินใจสำคัญ
 - **ใช้ SheetJS จาก CDN ของเขาเองแทน npm** — เวอร์ชันที่ publish บน npm
@@ -72,7 +82,9 @@
 | สลับ session ผ่าน dropdown | ✅ นำทางไปหน้ารายงาน session อื่นถูกต้อง, roster/summary เปลี่ยนตามกลุ่ม |
 | กดปุ่ม Export → server ตอบ 200 (ผ่านเบราว์เซอร์, เห็นเป็น download ไม่ใช่ network request ปกติ) | ✅ |
 | ตรวจไฟล์ .xlsx จริง: generate ด้วย logic เดียวกับ route แล้ว round-trip อ่านกลับด้วย `XLSX.read` | ✅ ชื่อชีตภาษาไทย, หัวเรื่อง/สรุป/ตารางครบ 11 แถว, ข้อมูลนักศึกษาและสถานะมา/ขาดตรงกับ Sheet จริงทุกช่อง ไม่มีปัญหา encoding |
+| Export สรุปทั้งเทอมกลุ่ม N01 (6 sessions, 33 คน) | ✅ คอลัมน์วันที่เรียงเก่า→ใหม่ถูกต้อง, แถว = 37 (3 หัว + 1 header + 33 คน) ตรงตามคาด |
+| Export สรุปทั้งเทอมกลุ่ม N03 (1 session, มีคนเช็คชื่อ 1 คน) | ✅ คนที่เช็คชื่อขึ้น "มา", 1/1, 100% — คนอื่นขึ้น "ขาด", 0/1, 0% ตรงสูตร |
 
 ## `npm run build` / typecheck
 ผ่านทั้งคู่ รวม route ใหม่ `/teacher/reports`, `/teacher/reports/[sessionId]`,
-และ `/teacher/reports/[sessionId]/export`
+`/teacher/reports/[sessionId]/export` และ `/teacher/reports/[sessionId]/export-summary`

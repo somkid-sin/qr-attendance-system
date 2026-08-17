@@ -241,3 +241,19 @@ export async function getAttendanceStudentIds(sessionId: string): Promise<Set<st
       .map((r) => r[0]),
   );
 }
+
+/**
+ * session_id -> set of present student_ids, from a single read of the whole
+ * attendance_log — used by the term-summary export so it doesn't re-fetch
+ * the log once per session.
+ */
+export async function getAttendanceBySession(): Promise<Map<string, Set<string>>> {
+  const rows = await getRows("attendance_log");
+  const map = new Map<string, Set<string>>();
+  for (const [studentId, sessionId] of rows.slice(1)) {
+    if (!studentId || !sessionId) continue;
+    if (!map.has(sessionId)) map.set(sessionId, new Set());
+    map.get(sessionId)!.add(studentId);
+  }
+  return map;
+}
