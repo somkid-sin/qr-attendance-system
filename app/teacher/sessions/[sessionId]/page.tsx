@@ -3,22 +3,11 @@ import Link from "next/link";
 import { renderCurrentQr } from "@/lib/qr";
 import { secondsUntilNextWindow } from "@/lib/token";
 import { SUBJECT } from "@/lib/course";
+import { parseSessionId } from "@/lib/session";
 import { badge, card, color } from "@/app/ui/theme";
 import { RotatingQr } from "./rotating-qr";
 
 export const dynamic = "force-dynamic";
-
-/** Split "20260812-N01" → { date: "2026-08-12", section: "N01" }. */
-function parseSessionId(sessionId: string): { date: string; section: string } {
-  const dash = sessionId.indexOf("-");
-  const compact = dash >= 0 ? sessionId.slice(0, dash) : sessionId;
-  const section = dash >= 0 ? sessionId.slice(dash + 1) : "";
-  const date =
-    compact.length === 8
-      ? `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`
-      : compact;
-  return { date, section };
-}
 
 export default async function SessionQrPage({
   params,

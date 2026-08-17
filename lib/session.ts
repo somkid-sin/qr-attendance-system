@@ -16,6 +16,18 @@ export function buildSessionId(dateIso: string, section: string): string {
   return `${compact}-${section}`;
 }
 
+/** Split "20260812-N01" → { date: "2026-08-12", section: "N01" }. */
+export function parseSessionId(sessionId: string): { date: string; section: string } {
+  const dash = sessionId.indexOf("-");
+  const compact = dash >= 0 ? sessionId.slice(0, dash) : sessionId;
+  const section = dash >= 0 ? sessionId.slice(dash + 1) : "";
+  const date =
+    compact.length === 8
+      ? `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`
+      : compact;
+  return { date, section };
+}
+
 /** True for a "YYYY-MM-DD" string that is a real calendar date. */
 export function isValidDateIso(dateIso: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso)) return false;

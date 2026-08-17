@@ -149,14 +149,21 @@ export async function getSession(sessionId: string): Promise<SessionRow | null> 
   };
 }
 
+export interface StudentRecord {
+  fullName: string;
+  /** กลุ่มเรียน — column C, added 2569-08-16 (see data-dictionary.md). */
+  section: string;
+}
+
 /**
  * Look up a student_id in the master list (FR8). Returns the student's
- * full_name if found, or null if the id is not in `students`.
+ * name + section if found, or null if the id is not in `students`.
  */
-export async function findStudentName(studentId: string): Promise<string | null> {
+export async function findStudent(studentId: string): Promise<StudentRecord | null> {
   const rows = await getRows("students");
   const row = rows.slice(1).find((r) => r[0] === studentId);
-  return row ? (row[1] ?? "") : null;
+  if (!row) return null;
+  return { fullName: row[1] ?? "", section: row[2] ?? "" };
 }
 
 /**

@@ -12,7 +12,7 @@ import { isValidPeriod, isValidSection } from "@/lib/course";
 import {
   appendRow,
   attendanceExists,
-  findStudentName,
+  findStudent,
   getSession,
   sessionIdExists,
 } from "@/lib/sheets";
@@ -20,6 +20,7 @@ import {
   buildSessionId,
   formatDateTime,
   isValidDateIso,
+  parseSessionId,
   sessionToRow,
 } from "@/lib/session";
 import { renderCurrentQr } from "@/lib/qr";
@@ -178,13 +179,21 @@ export async function checkinAction(
       return { status: "error", message: "session นี้ปิดรับเช็คชื่อแล้ว" };
     }
 
-    const studentName = await findStudentName(studentId);
-    if (studentName === null) {
+    const student = await findStudent(studentId);
+    if (student === null) {
       return { status: "error", message: "ไม่พบรหัสนักศึกษานี้ในรายวิชา" };
     }
 
+    const { section } = parseSessionId(sessionId);
+    if (student.section !== section) {
+      return {
+        status: "error",
+        message: `รหัสนักศึกษานี้อยู่กลุ่มเรียน ${student.section} ไม่ใช่กลุ่ม ${section} ของ session นี้`,
+      };
+    }
+
     if (await attendanceExists(studentId, sessionId)) {
-      return { status: "already", message: "เช็คชื่อไปแล้ว", studentName };
+      return { status: "already", message: "เช็คชื่อไปแล้ว", studentName: student.fullName };
     }
 
     await appendRow("attendance_log", [
@@ -194,7 +203,7 @@ export async function checkinAction(
       "present",
     ]);
 
-    return { status: "success", message: "เช็คชื่อสำเร็จ", studentName };
+    return { status: "success", message: "เช็คชื่อสำเร็จ", studentName: student.fullName };
   } catch (err) {
     console.error("checkinAction failed:", err);
     return {

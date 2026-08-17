@@ -6,6 +6,7 @@
 |---|---|---|---|---|---|
 | A | student_id | text (13 หลัก) | ✓ | 6804681001001 | Primary key, unique |
 | B | full_name | text | ✓ | นายณัฐวุฒิ ราชฤทธิ์ | จาก master list ที่อาจารย์อัปโหลด |
+| C | Section | text | ✓ | N01 | เพิ่ม 2569-08-16 — ต้องตรงกับ section ที่ encode ใน session_id (ดู Sheet 2) ถึงจะเช็คชื่อผ่าน (UC2) |
 
 ## Sheet 2: sessions (FR1, FR2)
 
